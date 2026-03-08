@@ -14,6 +14,96 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Styled Commenter",
+      "properties": {
+        "styled-commenter.styles.boxed.defaultSize": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "description": "Default size for boxed comments"
+        },
+        "styled-commenter.styles.boxed.minPadding": {
+          "type": "number",
+          "default": 5,
+          "minimum": 3,
+          "description": "Minimum padding for boxed comments"
+        },
+        "styled-commenter.styles.bordered.defaultSize": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "description": "Default size for bordered comments"
+        },
+        "styled-commenter.styles.bordered.minPadding": {
+          "type": "number",
+          "default": 5,
+          "minimum": 3,
+          "description": "Minimum padding for bordered comments"
+        },
+        "styled-commenter.styles.bordered.leftMargin": {
+          "type": "number",
+          "default": 4,
+          "minimum": 0,
+          "description": "leftMargin for bordered comments"
+        },
+        "styled-commenter.styles.line.defaultSize": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "description": "Default size for line comments"
+        },
+        "styled-commenter.styles.line.minPadding": {
+          "type": "number",
+          "default": 10,
+          "minimum": 5,
+          "description": "Minimum padding for line comments"
+        }
+      }
+  },
+  "submenus": [
+    {
+      "id": "styled-commenter.convertToComment",
+      "label": "Convert To Comment"
+    }
+  ],
+  "menus": {
+      "editor/context": [
+        {
+          "submenu": "styled-commenter.convertToComment",
+          "group": "1_modification",
+          "when": "editorHasSelection && (resourceLangId == python || resourceLangId == c || resourceLangId == cpp || resourceLangId == javascript || resourceLangId == typescript)"
+        }
+      ],
+      "styled-commenter.convertToComment": [
+        {
+          "command": "styled-commenter.convertToBoxed"
+        },
+        {
+          "command": "styled-commenter.convertToBordered"
+        },
+        {
+          "command": "styled-commenter.convertToHeader"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "styled-commenter.convertToBoxed",
+        "title": "Convert To Boxed Comment",
+        "shortTitle": "Boxed comment"
+      },
+      {
+        "command": "styled-commenter.convertToBordered",
+        "title": "Convert To Bordered Comment",
+        "shortTitle": "Bordered Comment"
+      },
+      {
+        "command": "styled-commenter.convertToHeader",
+        "title": "Convert To Header Comment",
+        "shortTitle": "Header Comment"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
