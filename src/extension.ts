@@ -3,12 +3,12 @@ import { CommentFormat, CommentArgument } from './common';
 import { boxedFormat, borderedFormat, headerFormat } from './formats';
 
 const CommentFormats: Record<string, CommentFormat> = {
-	BORDERED: borderedFormat,
-	BOXED: boxedFormat,
-	HEADER: headerFormat
+	bordered: borderedFormat,
+	boxed: boxedFormat,
+	header: headerFormat
 };
 
-const commandRegex = new RegExp(`\\.COMMENT\\.(${Object.keys(CommentFormats).join('|')})\\.(.*)`);
+const normalizedFormatKeys = Object.keys(CommentFormats).map(key => key.toLowerCase());
 
 class CommentProvider implements vscode.CompletionItemProvider {
 	provideCompletionItems(
@@ -17,67 +17,72 @@ class CommentProvider implements vscode.CompletionItemProvider {
 		token: vscode.CancellationToken,
 		context: vscode.CompletionContext): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>> {
 
-		const items: vscode.CompletionItem[] = [];
 		const lineText = document.lineAt(position).text.substring(0, position.character).trim();
+		const lineTokensNormalized = lineText.toLowerCase().split(".");
+		const lineTokens = lineText.split(".");
 
-		if (lineText === ".") {
-			const item = new vscode.CompletionItem("COMMENT", vscode.CompletionItemKind.Module);
-			item.detail = "start styled comment";
-			items.push(item);
+		if (!lineText.startsWith(".")) {
+			return [];
 		}
-		if (lineText === ".COMMENT.") {
+
+		if ((lineTokens.length === 2)) {
+			const item = new vscode.CompletionItem("cz", vscode.CompletionItemKind.Module);
+			item.detail = "start styled comment";
+			item.sortText = "0" + item.label;
+			return [item];
+		}
+		if ((lineTokens.length === 3) && (lineTokensNormalized[1] === "cz")) {
+			const items: vscode.CompletionItem[] = [];
 			for (const [key, format] of Object.entries(CommentFormats)) {
 				const item = new vscode.CompletionItem(key, vscode.CompletionItemKind.Module);
 				item.insertText = new vscode.SnippetString(key);
-				item.documentation = "asdasdasdasda asd asd ";
 				item.detail = format.details;
+				item.sortText = "0" + item.label;
 				items.push(item);
 			}
+			return items;
 		}
 
+		if ((lineTokens.length > 3) && (lineTokensNormalized[1] === "cz") && (normalizedFormatKeys.includes(lineTokensNormalized[2]))) {
+			const items: vscode.CompletionItem[] = [];
 
-		const match = lineText.match(commandRegex);
-		if (match) {
-			const content = match[2];
-			const type = match[1];
-			const commentFormat = CommentFormats[type];
+			const commentFormat = CommentFormats[lineTokensNormalized[2]]; // FUCK ME
 
-			const tokens = content.split(".")
-			const args: Record<string, any> = {}
-			const lastToken = tokens[tokens.length - 1]
+			const commandTokens = lineTokensNormalized.slice(3);
+			const args: Record<string, any> = {};
+			const lastToken = lineTokens[lineTokens.length - 1];
 
-			for (let i = 0; i < tokens.length; i += 2) {
-				args[tokens[i]] = tokens[i + 1]
+			for (let i = 0; i < commandTokens.length; i += 2) {
+				args[commandTokens[i]] = commandTokens[i + 1];
 			}
 
-			let argsLeft: Record<string, CommentArgument> = {}
+			let argsLeft: Record<string, CommentArgument> = {};
 			let canEnterComment = true;
 
 			for (const [key, arg] of Object.entries(commentFormat.arguments)) {
-				if (args[key] == undefined) {
-					argsLeft[key] = arg
+				if (args[key] === undefined) {
+					argsLeft[key] = arg;
 				}
 			}
 			canEnterComment = !Object.values(argsLeft).some(arg => !arg.optional);
 
-			if (tokens.length % 2) {
+			if (commandTokens.length % 2) {
 				if (canEnterComment) {
-					if (lastToken == "") {
-						const item = new vscode.CompletionItem("enter a log ass comment", vscode.CompletionItemKind.Text);
+					if (lastToken === "") {
+						const item = new vscode.CompletionItem("Enter a long ass comment", vscode.CompletionItemKind.Text);
 						item.detail = "Enter the comment";
 						item.keepWhitespace = true;
 						items.push(item);
 					} else {
-						const item = new vscode.CompletionItem(lastToken, vscode.CompletionItemKind.Text);
+						const tmp = lastToken.split(" ");
+						const item = new vscode.CompletionItem(lastToken, vscode.CompletionItemKind.Event);
 						item.detail = "Make comment";
 						item.command = {
-							command: "styled-commenter.convertToComment",
+							command: "commentZ.convertToComment",
 							title: "Convert to comment",
-							arguments: [lastToken, type, args]
+							arguments: [lastToken, lineTokensNormalized[2], args]
 						};
-						item.keepWhitespace = true;
 						items.push(item);
-
 					}
 				}
 				for (const [key, arg] of Object.entries(argsLeft)) {
@@ -86,14 +91,12 @@ class CommentProvider implements vscode.CompletionItemProvider {
 					items.push(item);
 				}
 			} else {
-				const lastArg = commentFormat.arguments[tokens[tokens.length - 2]]
+				const lastArg = commentFormat.arguments[commandTokens[commandTokens.length - 2]];
 
-				console.log(lastArg)
-
-				if (lastArg != undefined) {
-					if (lastToken == "") {
+				if (lastArg !== undefined) {
+					if (lastToken === "") {
 						if (lastArg.isInteger) {
-							const item = new vscode.CompletionItem("10", vscode.CompletionItemKind.Property);
+							const item = new vscode.CompletionItem("60", vscode.CompletionItemKind.Property);
 							item.detail = `Enter an integer as ${lastArg.name}`;
 							items.push(item);
 						} else {
@@ -108,9 +111,12 @@ class CommentProvider implements vscode.CompletionItemProvider {
 					}
 				}
 			}
+
+			items.forEach(items => items.sortText = "0_" + items.label);
+			return items;
 		}
 
-		return items;
+		return [];
 	}
 	resolveCompletionItem(item: vscode.CompletionItem, token: vscode.CancellationToken): vscode.ProviderResult<vscode.CompletionItem> {
 		return item;
@@ -135,10 +141,13 @@ function convertToCommand(content: string, type: string, args: Record<string, an
 }
 const getSelectedContent = (): string => {
 	const editor = vscode.window.activeTextEditor;
-	if (!editor) return "";
+	if (!editor) {
+		return "";
+	}
 	const selection = editor.selection;
 	return editor.document.getText(selection);
 };
+
 export function activate(context: vscode.ExtensionContext) {
 	const suggestProvider = vscode.languages.registerCompletionItemProvider(
 		['python', 'cpp', 'c', 'javascript', 'typescript'],
@@ -147,25 +156,31 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	context.subscriptions.push(suggestProvider);
 
-	const command = vscode.commands.registerCommand("styled-commenter.convertToComment", convertToCommand)
+	const command = vscode.commands.registerCommand("commentZ.convertToComment", convertToCommand);
 	context.subscriptions.push(command);
 
-	const borderedCommand = vscode.commands.registerCommand("styled-commenter.convertToBordered", () => {
+	const borderedCommand = vscode.commands.registerCommand("commentZ.convertToBordered", () => {
 		const content = getSelectedContent();
-		if (content) convertToCommand(content, "BORDERED", {});
+		if (content) {
+			convertToCommand(content, "bordered", {});
+		}
 	});
 
-	const boxedCommand = vscode.commands.registerCommand("styled-commenter.convertToBoxed", () => {
+	const boxedCommand = vscode.commands.registerCommand("commentZ.convertToBoxed", () => {
 		const content = getSelectedContent();
-		if (content) convertToCommand(content, "BOXED", {});
+		if (content) {
+			convertToCommand(content, "boxed", {});
+		}
 	});
 
-	const headerCommand = vscode.commands.registerCommand("styled-commenter.convertToHeader", () => {
+	const headerCommand = vscode.commands.registerCommand("commentZ.convertToHeader", () => {
 		const content = getSelectedContent();
-		if (content) convertToCommand(content, "HEADER", {});
+		if (content) {
+			convertToCommand(content, "header", {});
+		}
 	});
 
 	context.subscriptions.push(borderedCommand, boxedCommand, headerCommand);
 }
 
-export function deactivate() { }
+export function deactivate() { };

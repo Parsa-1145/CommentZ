@@ -1,105 +1,107 @@
 {
-  "name": "styled-commenter",
-  "displayName": "Styled Commenter",
-  "description": "Simple styled comments",
-  "version": "0.0.1",
+  "name": "CommentZ",
+  "displayName": "CommentZ",
+  "description": "Simple styled commentz",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.103.0"
   },
   "categories": [
     "Other"
   ],
+  "publisher": "PZ",
+  "icon": "assets/icon.png",
   "activationEvents": [
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Styled Commenter",
+      "title": "CommentZ",
       "properties": {
-        "styled-commenter.styles.boxed.defaultSize": {
+        "commentZ.styles.boxed.defaultSize": {
           "type": "number",
           "default": 60,
           "minimum": 10,
-          "description": "Default size for boxed comments"
+          "description": "Default size for boxed commentz"
         },
-        "styled-commenter.styles.boxed.minPadding": {
+        "commentZ.styles.boxed.minPadding": {
           "type": "number",
           "default": 5,
           "minimum": 3,
-          "description": "Minimum padding for boxed comments"
+          "description": "Minimum padding for boxed commentz"
         },
-        "styled-commenter.styles.bordered.defaultSize": {
+        "commentZ.styles.bordered.defaultSize": {
           "type": "number",
           "default": 60,
           "minimum": 10,
-          "description": "Default size for bordered comments"
+          "description": "Default size for bordered commentz"
         },
-        "styled-commenter.styles.bordered.minPadding": {
+        "commentZ.styles.bordered.minPadding": {
           "type": "number",
           "default": 5,
           "minimum": 3,
-          "description": "Minimum padding for bordered comments"
+          "description": "Minimum padding for bordered commentz"
         },
-        "styled-commenter.styles.bordered.leftMargin": {
+        "commentZ.styles.bordered.leftMargin": {
           "type": "number",
           "default": 4,
           "minimum": 0,
-          "description": "leftMargin for bordered comments"
+          "description": "leftMargin for bordered commentz"
         },
-        "styled-commenter.styles.line.defaultSize": {
+        "commentZ.styles.line.defaultSize": {
           "type": "number",
           "default": 60,
           "minimum": 10,
-          "description": "Default size for line comments"
+          "description": "Default size for line commentz"
         },
-        "styled-commenter.styles.line.minPadding": {
+        "commentZ.styles.line.minPadding": {
           "type": "number",
           "default": 10,
           "minimum": 5,
-          "description": "Minimum padding for line comments"
+          "description": "Minimum padding for line commentz"
         }
       }
   },
   "submenus": [
     {
-      "id": "styled-commenter.convertToComment",
-      "label": "Convert To Comment"
+      "id": "commentZ.convertToComment",
+      "label": "Make Comment"
     }
   ],
   "menus": {
       "editor/context": [
         {
-          "submenu": "styled-commenter.convertToComment",
+          "submenu": "commentZ.convertToComment",
           "group": "1_modification",
           "when": "editorHasSelection && (resourceLangId == python || resourceLangId == c || resourceLangId == cpp || resourceLangId == javascript || resourceLangId == typescript)"
         }
       ],
-      "styled-commenter.convertToComment": [
+      "commentZ.convertToComment": [
         {
-          "command": "styled-commenter.convertToBoxed"
+          "command": "commentZ.convertToBoxed"
         },
         {
-          "command": "styled-commenter.convertToBordered"
+          "command": "commentZ.convertToBordered"
         },
         {
-          "command": "styled-commenter.convertToHeader"
+          "command": "commentZ.convertToHeader"
         }
       ]
     },
     "commands": [
       {
-        "command": "styled-commenter.convertToBoxed",
+        "command": "commentZ.convertToBoxed",
         "title": "Convert To Boxed Comment",
         "shortTitle": "Boxed comment"
       },
       {
-        "command": "styled-commenter.convertToBordered",
+        "command": "commentZ.convertToBordered",
         "title": "Convert To Bordered Comment",
         "shortTitle": "Bordered Comment"
       },
       {
-        "command": "styled-commenter.convertToHeader",
+        "command": "commentZ.convertToHeader",
         "title": "Convert To Header Comment",
         "shortTitle": "Header Comment"
       }
